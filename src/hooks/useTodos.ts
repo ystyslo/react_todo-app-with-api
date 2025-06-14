@@ -133,26 +133,6 @@ export const useTodos = () => {
       setLoadingTodoIds(prev => prev.filter(id => id !== todoId));
     }
   };
-  //   const idsToDelete = completedTodos.map(todo => todo.id);
-
-  //   setLoadingTodoIds(idsToDelete);
-
-  //   const results = await Promise.allSettled(
-  //     idsToDelete.map(id => deleteTodo(id)),
-  //   );
-
-  //   const hasError = results.some(
-  //     result =>
-  //       (result.status === 'fulfilled' && result.value === false) ||
-  //       result.status === 'rejected',
-  //   );
-
-  //   if (hasError) {
-  //     setErrorMessage(ErrorMessages.DELETE_ERROR);
-  //   }
-
-  //   setLoadingTodoIds([]);
-  // };
 
   const handleClearCompleted = async () => {
     const idsToDelete = completedTodos.map(todo => todo.id);
