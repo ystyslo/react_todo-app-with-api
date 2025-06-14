@@ -25,19 +25,17 @@ export const Footer: React.FC<Props> = ({
       </span>
 
       <nav className="filter" data-cy="Filter">
-        {Object.entries(Filter).map(([key, value]) => {
-          return (
-            <a
-              key={key}
-              href="#/"
-              className={cn('filter__link', { selected: filter === value })}
-              data-cy={`FilterLink${key}`}
-              onClick={() => onFilterChange(value)}
-            >
-              {key}
-            </a>
-          );
-        })}
+        {Object.entries(Filter).map(([key, value]) => (
+          <a
+            key={key}
+            href="#/"
+            className={cn('filter__link', { selected: filter === value })}
+            data-cy={`FilterLink${key}`}
+            onClick={() => onFilterChange(value)}
+          >
+            {key}
+          </a>
+        ))}
       </nav>
 
       <button

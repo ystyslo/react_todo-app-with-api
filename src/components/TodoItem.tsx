@@ -3,7 +3,7 @@
 
 import cn from 'classnames';
 import { Todo } from '../types/Todo';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 type Props = {
   todo: Todo;
@@ -13,13 +13,13 @@ type Props = {
   onTitleUpdate?: (id: number, title: string) => Promise<boolean>;
 };
 
-export const TodoItem: React.FC<Props> = ({
+export const TodoItem = React.memo(function TodoItem({
   todo,
   onTodoDelete,
   isLoading = true,
-  onStatusChange = () => {},
-  onTitleUpdate = () => {},
-}) => {
+  onStatusChange,
+  onTitleUpdate,
+}: Props) {
   const [isTodoEditing, setIsTodoEditing] = useState(false);
   const [title, setTitle] = useState(todo.title);
 
@@ -35,7 +35,7 @@ export const TodoItem: React.FC<Props> = ({
     }
 
     if (trimmedTitle !== todo.title) {
-      const isSuccess = await onTitleUpdate(todo.id, trimmedTitle);
+      const isSuccess = await onTitleUpdate?.(todo.id, trimmedTitle);
 
       e?.currentTarget?.blur();
 
@@ -61,7 +61,7 @@ export const TodoItem: React.FC<Props> = ({
           data-cy="TodoStatus"
           type="checkbox"
           className="todo__status"
-          onChange={() => onStatusChange(todo.id, !todo.completed)}
+          onChange={() => onStatusChange?.(todo.id, !todo.completed)}
           checked={todo.completed}
         />
       </label>
@@ -110,4 +110,4 @@ export const TodoItem: React.FC<Props> = ({
       </div>
     </div>
   );
-};
+});

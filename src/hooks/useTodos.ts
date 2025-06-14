@@ -133,6 +133,26 @@ export const useTodos = () => {
       setLoadingTodoIds(prev => prev.filter(id => id !== todoId));
     }
   };
+  //   const idsToDelete = completedTodos.map(todo => todo.id);
+
+  //   setLoadingTodoIds(idsToDelete);
+
+  //   const results = await Promise.allSettled(
+  //     idsToDelete.map(id => deleteTodo(id)),
+  //   );
+
+  //   const hasError = results.some(
+  //     result =>
+  //       (result.status === 'fulfilled' && result.value === false) ||
+  //       result.status === 'rejected',
+  //   );
+
+  //   if (hasError) {
+  //     setErrorMessage(ErrorMessages.DELETE_ERROR);
+  //   }
+
+  //   setLoadingTodoIds([]);
+  // };
 
   const handleClearCompleted = async () => {
     const idsToDelete = completedTodos.map(todo => todo.id);
@@ -140,14 +160,18 @@ export const useTodos = () => {
     setLoadingTodoIds(idsToDelete);
 
     const results = await Promise.allSettled(
-      idsToDelete.map(id => deleteTodo(id)),
+      idsToDelete.map(id => TodosService.deleteTodo(id)),
     );
 
-    const hasError = results.some(
-      result =>
-        (result.status === 'fulfilled' && result.value === false) ||
-        result.status === 'rejected',
+    const successfullyDeletedIds = idsToDelete.filter(
+      (_, idx) => results[idx].status === 'fulfilled',
     );
+
+    setTodos(currentTodos =>
+      currentTodos.filter(todo => !successfullyDeletedIds.includes(todo.id)),
+    );
+
+    const hasError = results.some(result => result.status === 'rejected');
 
     if (hasError) {
       setErrorMessage(ErrorMessages.DELETE_ERROR);
@@ -161,17 +185,29 @@ export const useTodos = () => {
 
     setLoadingTodoIds(todosToUpdate.map(todo => todo.id));
 
-    const results = await Promise.all(
-      todosToUpdate.map(todo => updateTodoStatus(todo.id, !isAllCompleted)),
-    );
+    try {
+      await Promise.all(
+        todosToUpdate.map(todo =>
+          TodosService.updateTodo(todo.id, { completed: !isAllCompleted }),
+        ),
+      );
 
-    const hasError = results.includes(false);
+      setTodos(prevTodos =>
+        prevTodos.map(todo =>
+          todosToUpdate.some(t => t.id === todo.id)
+            ? { ...todo, completed: !isAllCompleted }
+            : todo,
+        ),
+      );
 
-    if (hasError) {
+      return true;
+    } catch {
       setErrorMessage(ErrorMessages.UPDATE_ERROR);
-    }
 
-    setLoadingTodoIds([]);
+      return false;
+    } finally {
+      setLoadingTodoIds([]);
+    }
   };
 
   return {

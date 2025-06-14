@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import * as TodosService from './api/todos';
 import { UserWarning } from './UserWarning';
@@ -27,7 +27,10 @@ export const App: React.FC = () => {
   } = useTodos();
 
   const [filter, setFilter] = useState<Filter>(Filter.All);
-  const visibleTodos = getVisibleTodos(todos, filter);
+  const visibleTodos = useMemo(
+    () => getVisibleTodos(todos, filter),
+    [todos, filter],
+  );
 
   if (!TodosService.USER_ID) {
     return <UserWarning />;
