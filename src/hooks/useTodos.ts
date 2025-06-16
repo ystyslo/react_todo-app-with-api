@@ -85,7 +85,7 @@ export const useTodos = () => {
 
       return false;
     } finally {
-      setLoadingTodoIds([]);
+      setLoadingTodoIds(prev => prev.filter(id => id !== todoId));
     }
   };
 
@@ -137,57 +137,16 @@ export const useTodos = () => {
   const handleClearCompleted = async () => {
     const idsToDelete = completedTodos.map(todo => todo.id);
 
-    setLoadingTodoIds(idsToDelete);
-
-    const results = await Promise.allSettled(
-      idsToDelete.map(id => TodosService.deleteTodo(id)),
-    );
-
-    const successfullyDeletedIds = idsToDelete.filter(
-      (_, idx) => results[idx].status === 'fulfilled',
-    );
-
-    setTodos(currentTodos =>
-      currentTodos.filter(todo => !successfullyDeletedIds.includes(todo.id)),
-    );
-
-    const hasError = results.some(result => result.status === 'rejected');
-
-    if (hasError) {
-      setErrorMessage(ErrorMessages.DELETE_ERROR);
-    }
-
-    setLoadingTodoIds([]);
+    await Promise.allSettled(idsToDelete.map(id => deleteTodo(id)));
   };
 
   const handleToggleAllCompleted = async () => {
     const todosToUpdate = isAllCompleted ? completedTodos : uncompletedTodos;
+    const newStatus = !isAllCompleted;
 
-    setLoadingTodoIds(todosToUpdate.map(todo => todo.id));
-
-    try {
-      await Promise.all(
-        todosToUpdate.map(todo =>
-          TodosService.updateTodo(todo.id, { completed: !isAllCompleted }),
-        ),
-      );
-
-      setTodos(prevTodos =>
-        prevTodos.map(todo =>
-          todosToUpdate.some(t => t.id === todo.id)
-            ? { ...todo, completed: !isAllCompleted }
-            : todo,
-        ),
-      );
-
-      return true;
-    } catch {
-      setErrorMessage(ErrorMessages.UPDATE_ERROR);
-
-      return false;
-    } finally {
-      setLoadingTodoIds([]);
-    }
+    await Promise.all(
+      todosToUpdate.map(todo => updateTodoStatus(todo.id, newStatus)),
+    );
   };
 
   return {
